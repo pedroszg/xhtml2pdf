@@ -85,6 +85,10 @@ from xhtml2pdf.xhtml2pdf_reportlab import PmlLeftPageBreak, PmlRightPageBreak
 
 CSSAttrCache = {}
 
+text = []
+text2 = []
+div_attr_list = []
+
 log = logging.getLogger("xhtml2pdf")
 
 rxhttpstrip = re.compile("https?://[^/]+(.*)", re.M | re.I)
@@ -296,7 +300,6 @@ def CSSCollect(node, c):
     # return node.cssAttrs
 
     if c.css:
-
         _key = getCSSAttrCacheKey(node)
 
         if hasattr(node.parentNode, "tagName"):
@@ -485,7 +488,6 @@ def pisaPreLoop(node, context, collect=False):
     """
     Collect all CSS definitions
     """
-
     data = u""
     if node.nodeType == Node.TEXT_NODE and collect:
         data = node.data
@@ -516,7 +518,6 @@ def pisaPreLoop(node, context, collect=False):
         result = pisaPreLoop(node, context, collect=collect)
         if collect:
             data += result
-
     return data
 
 
@@ -545,13 +546,17 @@ def pisaLoop(node, context, path=None, **kw):
 
     # ELEMENT
     elif node.nodeType == Node.ELEMENT_NODE:
-
         node.tagName = node.tagName.replace(":", "").lower()
-
         if node.tagName in ("style", "script"):
             return
 
         path = copy.copy(path) + [node.tagName]
+
+        # Prepare attributes to grid simulation
+        if node.tagName == 'div':
+            div_attr = pisaGetAttributes(context, node.tagName, node.attributes)
+            div_attr_list.append(div_attr)
+
 
         # Prepare attributes
         attr = pisaGetAttributes(context, node.tagName, node.attributes)
@@ -741,6 +746,7 @@ def pisaLoop(node, context, path=None, **kw):
         # Loop over children
         for node in node.childNodes:
             pisaLoop(node, context, path, **kw)
+        print(div_attr_list)
 
 
 def pisaParser(src, context, default_css="", xhtml=False, encoding=None, xml_output=None):
@@ -784,7 +790,7 @@ def pisaParser(src, context, default_css="", xhtml=False, encoding=None, xml_out
     document = parser.parse(
         src, **parser_kwargs
     )  # encoding=encoding)
-
+    
     if xml_output:
         if encoding:
             xml_output.write(document.toprettyxml(encoding=encoding))

@@ -56,6 +56,7 @@ sizeDelta = 2       # amount to reduce font size by for super and sub script
 subFraction = 0.4   # fraction of font size that a sub script should be lowered
 superFraction = 0.4
 
+
 NBSP = u"\u00a0"
 
 
@@ -388,7 +389,7 @@ class pisaContext(object):
                   ('path', 'story', 'text', 'log', 'frameStaticList',
                    'pisaBackgroundList', 'frameList', 'anchorFrag',
                    'anchorName', 'fragList', 'fragAnchor', 'fragStack'
-                   ), [],  _copy=True)
+                   ), [], _copy=True)
 
         set_value(self, ('node', 'indexing_story',
                          'template', 'keepInFrameIndex',
@@ -398,6 +399,7 @@ class pisaContext(object):
         set_value(self, ('text', 'cssText', 'cssDefaultText'), "")
         set_value(self, ('templateList', 'frameStatic', 'imageData'),
                   {}, _copy=True)
+
         self.capacity = capacity
         self.toc = PmlTableOfContents()
         self.multiBuild = False
@@ -475,6 +477,7 @@ class pisaContext(object):
     # METHODS FOR STORY
     def addStory(self, data):
         self.story.append(data)
+
 
     def swapStory(self, story=None):
         story = story if story is not None else []
