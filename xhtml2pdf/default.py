@@ -316,9 +316,9 @@ TAGS = {
 
     "div": (1, {
         "align": ["left", "center", "right", "justify"],
-        "bulma-grid-class": str,
         "class": str, #could be a list
         "coltype": str,
+        "rowtype": str,
     }),
 
     "p": (1, {

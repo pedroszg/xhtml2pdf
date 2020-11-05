@@ -29,6 +29,8 @@ from reportlab.platypus.doctemplate import FrameBreak, NextPageTemplate
 from reportlab.platypus.flowables import KeepInFrame, PageBreak
 
 from xhtml2pdf.default import BOOL, BOX, COLOR, FILE, FONT, INT, MUST, POS, SIZE, STRING, TAGS
+from xhtml2pdf.default_g import default_g
+from xhtml2pdf.grid import grid
 
 # TODO: Why do we need to import these Tags here? They aren't uses in this file or any other file,
 #  but if we don't import them, Travis & AppVeyor fail. Very strange (fbernhart)
@@ -540,6 +542,14 @@ def pisaLoop(node, context, path=None, **kw):
 
     # TEXT
     if node.nodeType == Node.TEXT_NODE:
+        # METHOD TO BUILD A GRID STRUCTURE NEEDED TO USE ON GRID EXPERIMENT
+        text.append(node.data)
+        if text.__contains__('\n    '):
+            text.remove('\n    ')
+        if text.__contains__('\n'):
+            text.remove('\n')
+        #---------------------------------------------------------------------
+
         # print indent, "#", repr(node.data) #, context.frag
         context.addFrag(node.data)
         # context.text.append(node.value)
@@ -552,11 +562,11 @@ def pisaLoop(node, context, path=None, **kw):
 
         path = copy.copy(path) + [node.tagName]
 
-        # Prepare attributes to grid simulation
+        # PREPARE GRID ATTRIBUTES, NEEDED TO USE IN GRID EXPERIMENT
         if node.tagName == 'div':
             div_attr = pisaGetAttributes(context, node.tagName, node.attributes)
             div_attr_list.append(div_attr)
-
+        #----------------------------------------------------------
 
         # Prepare attributes
         attr = pisaGetAttributes(context, node.tagName, node.attributes)
@@ -746,7 +756,91 @@ def pisaLoop(node, context, path=None, **kw):
         # Loop over children
         for node in node.childNodes:
             pisaLoop(node, context, path, **kw)
-        print(div_attr_list)
+
+        #NEEDED TO USE ON GRID EXPERIMENT
+
+        cont = 0
+        for i in text:
+            if cont >= 1:
+                i = i.replace('\n        ', '')
+                i = i.replace('\n    ', '')
+                i = i.replace('     \n', '')
+                text2.append(i)
+            cont = cont + 1
+        if div_attr_list != [] and text2 != []:
+            divs = set_bulma_grid_class(div_attr_list)
+            g = grid(set_column_text(grid_build(divs), text2))
+            g.final_pf(margin_top=2)
+
+# METHOD TO BUILD A GRID STRUCTURE NEEDED, TO USE ON GRID EXPERIMENT
+def grid_build(div_attr):
+    content = []
+    cont = 1
+    parent = 1
+    for div in div_attr:
+        if div.get('class') == 'row' and div.get('rowtype') == None:
+            dic = {
+                "class": 'columns',
+            }
+            content.append(dic)
+        if div.get('class') != 'row' and div.get('coltype') == 'child' and parent != None:
+            dic = {
+                "class": div.get('class'),
+                "text": ' ',
+                "child": str(parent),
+            }
+            content.append(dic)
+            cont = cont + 1
+        if div.get('class') != 'row' and div.get('coltype') == 'parent':
+            dic = {
+                "class": div.get('class'),
+                "text": ' ',
+                "parent": str(cont),
+            }
+            parent = cont
+            content.append(dic)
+            cont = cont + 1
+        if div.get('class') != 'row' and div.get('coltype') == None:
+            dic = {
+                "class": div.get('class'),
+                "text": ' ',
+            }
+            parent = cont
+            content.append(dic)
+            cont = cont + 1
+
+    return content
+
+# METHOD TO SET TEXT INTO COLUMNS GRID STRUCTURE, NEEDED TO USE ON GRID EXPERIMENT
+def set_column_text(content,text2):
+    cont = 0
+    result = []
+    for i in content:
+        if not i.__contains__('parent') and i.get('class') != 'columns':
+            i['text'] = text2[cont]
+            result.append(i)
+            cont = cont + 1
+        else:
+            result.append(i)
+    return result
+
+def set_bulma_grid_class(divs):
+    bulma_class = default_g.cols_bootstrap
+    cols = default_g.cols
+    result = []
+    for div in divs:
+        bulma_col = bulma_class.get(div.get('class'))
+        if bulma_col:
+            div['class'] = bulma_col
+            result.append(div)
+        else:
+            result.append(div)
+    return result
+
+
+
+
+
 
 
 def pisaParser(src, context, default_css="", xhtml=False, encoding=None, xml_output=None):
