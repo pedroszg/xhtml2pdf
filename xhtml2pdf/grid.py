@@ -28,12 +28,13 @@ class grid(utility_calc, utility_search_strip,default_g):
     unique_index = '#class-colS'
     next_frame = 'next_frame'
     context = None
+    styles = []
 
     def __init__(self, context):
 
         self.doc = BaseDocTemplate('grid.pdf', pagesize=letter, _pageBreakQuick=1, allowSplitting=1)
 
-        self.style = ParagraphStyle('style', textColor=colors.black, firstLineIndent=5, leading=16,
+        self.style = ParagraphStyle('style', textColor=colors.black, firstLineIndent=5, fontSize=7.5, leading=11.5,
                               borderPadding=(5,), borderColor=colors.blue, allowWidows=1, allowOrphans=1)
 
         self.doc_width = self.doc.width
@@ -71,7 +72,10 @@ class grid(utility_calc, utility_search_strip,default_g):
                                flowable.get('text'),
                                self.style)
 
+
     def set_flowables(self):
+        contador = 0
+        print(len(self.styles))
         objects = self.setting_context()
         for object in objects:
             if 'grid' in object:
@@ -80,8 +84,12 @@ class grid(utility_calc, utility_search_strip,default_g):
                         for i in f:
                             if i.get('text'):
                                 self.setting_index_to_flowable(i)
+                                print('contador', contador)
+                                self.p.style = self.styles[contador]
                                 self.flowElements.append(self.p)
                                 self.flowElements.append(FrameBreak())
+                                if i.get('text') != ' ':
+                                    contador = contador + 1
         return self.flowElements
 
     def get_cols_values(self, flowable):
@@ -174,11 +182,11 @@ class grid(utility_calc, utility_search_strip,default_g):
                             wid = wid - temp_width
                             f = Frame(self.doc.leftMargin + wid, startposition - values[1], values[0], values[1]
                                 + totalpading,
-                                topPadding=padingTop, bottomPadding=padingBottom, showBoundary=1)
+                                topPadding=padingTop, bottomPadding=padingBottom, showBoundary=0)
                             children = False
                         f = Frame(self.doc.leftMargin + wid, startposition - values[1], values[0], values[1]
                                   + totalpading,
-                                  topPadding=padingTop, bottomPadding=padingBottom, showBoundary=1)
+                                  topPadding=padingTop, bottomPadding=padingBottom, showBoundary=0)
                         temp_width = values[0]
                         wid = values[0] + wid + margin_left
                         self.frames.append(f)
@@ -189,13 +197,15 @@ class grid(utility_calc, utility_search_strip,default_g):
                     startposition = startposition - mxh - margin_top
                     wid = 0
 
-    def final_pf(self, margin_left=0, margin_top=0, padingTop=0, padingBottom=0):
+    def final_pf(self, margin_left=0, margin_top=0, padingTop=0, padingBottom=0, styles=None):
+        self.styles = styles
         self.create_frames(margin_left, margin_top, padingTop, padingBottom)
         self.pf.append(self.frames)
         if self.pf:
             contador = 0
             ptl = []
             ids = []
+            print(len(self.pf))
             for f in self.pf:
                 id = 'id' + str(contador)
                 ids.append(id)
@@ -204,10 +214,11 @@ class grid(utility_calc, utility_search_strip,default_g):
                 ptl.append(t)
             if self.morePages:
                 ids.remove('id0')
-            self.flowElements.insert(0, NextPageTemplate(ids))
-            self.doc.addPageTemplates(ptl)
-            self.clean_text_flowables()
-            self.doc.build(self.flowElements)
+            return ptl, ids
+            #self.flowElements.insert(0, NextPageTemplate(ids))
+            #self.doc.addPageTemplates(ptl)
+            #self.clean_text_flowables()
+            #self.doc.build(self.flowElements)
 
 #g = grid()
 #g.final_pf(margin_top=2)

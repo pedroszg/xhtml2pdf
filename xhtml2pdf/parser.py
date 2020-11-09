@@ -768,9 +768,10 @@ def pisaLoop(node, context, path=None, **kw):
                 text2.append(i)
             cont = cont + 1
         if div_attr_list != [] and text2 != []:
-            divs = set_bulma_grid_class(div_attr_list)
-            g = grid(set_column_text(grid_build(divs), text2))
-            g.final_pf(margin_top=2)
+            pass
+            #divs = set_bulma_grid_class(div_attr_list)
+            #g = grid(set_column_text(grid_build(divs), text2))
+            #g.final_pf(margin_top=2)
 
 # METHOD TO BUILD A GRID STRUCTURE NEEDED, TO USE ON GRID EXPERIMENT
 def grid_build(div_attr):

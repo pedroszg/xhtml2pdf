@@ -18,14 +18,17 @@ import io
 import logging
 
 import six
+from reportlab.platypus import NextPageTemplate, FrameBreak
 from reportlab.platypus.flowables import Spacer
 from reportlab.platypus.frames import Frame
 
 from xhtml2pdf.context import pisaContext
 from xhtml2pdf.default import DEFAULT_CSS
-from xhtml2pdf.parser import pisaParser
+from xhtml2pdf.parser import pisaParser, set_bulma_grid_class, div_attr_list, text2, set_column_text, grid_build
 from xhtml2pdf.util import PyPDF2, getBox, pisaTempFile
-from xhtml2pdf.xhtml2pdf_reportlab import PmlBaseDoc, PmlPageTemplate
+from xhtml2pdf.xhtml2pdf_reportlab import PmlBaseDoc, PmlPageTemplate, PmlParagraph
+from xhtml2pdf.grid import grid
+
 
 if not six.PY2:
     from html import escape as html_escape
@@ -107,7 +110,6 @@ def pisaDocument(src, dest=None, path=None, link_callback=None, debug=0,
 
     # Buffer PDF into memory
     out = io.BytesIO()
-
     doc = PmlBaseDoc(
         out,
         pagesize=context.pageSize,
@@ -117,8 +119,8 @@ def pisaDocument(src, dest=None, path=None, link_callback=None, debug=0,
                   context.meta["keywords"].strip().split(",") if x],
         title=context.meta["title"].strip(),
         showBoundary=0,
+        _pageBreakQuick=1,
         allowSplitting=1)
-
     # Prepare templates and their frames
     if "body" in context.templateList:
         body = context.templateList["body"]
@@ -135,8 +137,19 @@ def pisaDocument(src, dest=None, path=None, link_callback=None, debug=0,
                       bottomPadding=0,
                       topPadding=0)],
             pagesize=context.pageSize)
-
-    doc.addPageTemplates([body] + list(context.templateList.values()))
+    styles = []
+    for i in context.story:
+        print(type(i))
+        if isinstance(i, PmlParagraph):
+            styles.append(i.frags[0])
+    divs = set_bulma_grid_class(div_attr_list)
+    g = grid(set_column_text(grid_build(divs), text2))
+    ptl, ids = g.final_pf(margin_top=2, styles=styles)
+    context.story.insert(0, NextPageTemplate(ids))
+    #context.story.insert(0, NextPageTemplate(ids))
+    #print(ptl)
+    doc.addPageTemplates(ptl)
+    #doc.addPageTemplates([body] + list(context.templateList.values()))
 
     # Use multibuild e.g. if a TOC has to be created
     if context.multiBuild:
