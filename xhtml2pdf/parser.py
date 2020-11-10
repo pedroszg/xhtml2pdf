@@ -30,7 +30,7 @@ from reportlab.platypus.flowables import KeepInFrame, PageBreak
 
 from xhtml2pdf.default import BOOL, BOX, COLOR, FILE, FONT, INT, MUST, POS, SIZE, STRING, TAGS
 from xhtml2pdf.default_g import default_g
-from xhtml2pdf.grid import grid
+from xhtml2pdf.xhtml2pdf_reportlab import PmlParagraph
 
 # TODO: Why do we need to import these Tags here? They aren't uses in this file or any other file,
 #  but if we don't import them, Travis & AppVeyor fail. Very strange (fbernhart)
@@ -88,7 +88,7 @@ from xhtml2pdf.xhtml2pdf_reportlab import PmlLeftPageBreak, PmlRightPageBreak
 CSSAttrCache = {}
 
 text = []
-text2 = []
+grid_text = []
 div_attr_list = []
 
 log = logging.getLogger("xhtml2pdf")
@@ -765,20 +765,15 @@ def pisaLoop(node, context, path=None, **kw):
                 i = i.replace('\n        ', '')
                 i = i.replace('\n    ', '')
                 i = i.replace('     \n', '')
-                text2.append(i)
+                grid_text.append(i)
             cont = cont + 1
-        if div_attr_list != [] and text2 != []:
-            pass
-            #divs = set_bulma_grid_class(div_attr_list)
-            #g = grid(set_column_text(grid_build(divs), text2))
-            #g.final_pf(margin_top=2)
 
 # METHOD TO BUILD A GRID STRUCTURE NEEDED, TO USE ON GRID EXPERIMENT
-def grid_build(div_attr):
+def grid_build_context(div_attr_list):
     content = []
     cont = 1
     parent = 1
-    for div in div_attr:
+    for div in div_attr_list:
         if div.get('class') == 'row' and div.get('rowtype') == None:
             dic = {
                 "class": 'columns',
@@ -813,12 +808,13 @@ def grid_build(div_attr):
     return content
 
 # METHOD TO SET TEXT INTO COLUMNS GRID STRUCTURE, NEEDED TO USE ON GRID EXPERIMENT
-def set_column_text(content,text2):
+def set_column_text(content,grid_text):
     cont = 0
     result = []
+    grid_text.remove('NO GRID')
     for i in content:
         if not i.__contains__('parent') and i.get('class') != 'columns':
-            i['text'] = text2[cont]
+            i['text'] = grid_text[cont]
             result.append(i)
             cont = cont + 1
         else:
@@ -837,11 +833,6 @@ def set_bulma_grid_class(divs):
         else:
             result.append(div)
     return result
-
-
-
-
-
 
 
 def pisaParser(src, context, default_css="", xhtml=False, encoding=None, xml_output=None):
@@ -918,3 +909,11 @@ def XHTML2PDF(*a, **kw):
 
 
 XML2PDF = XHTML2PDF
+
+
+def collect_paragraph_styles(context):
+    styles = []
+    for i in context.story:
+        if isinstance(i, PmlParagraph):
+            styles.append(i.frags[0])
+    return styles

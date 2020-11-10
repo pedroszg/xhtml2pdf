@@ -1,5 +1,5 @@
 from reportlab.lib import colors
-from reportlab.platypus import BaseDocTemplate, Frame, PageTemplate, Paragraph, FrameBreak, NextPageTemplate
+from reportlab.platypus import BaseDocTemplate, Frame, PageTemplate, Paragraph, FrameBreak
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import ParagraphStyle
 import re
@@ -8,7 +8,7 @@ from xhtml2pdf.utility_search_strip_values import utility_search_strip
 from xhtml2pdf.default_g import default_g
 
 
-class grid(utility_calc, utility_search_strip,default_g):
+class grid(utility_calc, utility_search_strip, default_g):
 
     context_paint = []
     flowElements = []
@@ -74,8 +74,7 @@ class grid(utility_calc, utility_search_strip,default_g):
 
 
     def set_flowables(self):
-        contador = 0
-        print(len(self.styles))
+        cont = 0
         objects = self.setting_context()
         for object in objects:
             if 'grid' in object:
@@ -84,13 +83,13 @@ class grid(utility_calc, utility_search_strip,default_g):
                         for i in f:
                             if i.get('text'):
                                 self.setting_index_to_flowable(i)
-                                print('contador', contador)
-                                self.p.style = self.styles[contador]
+                                self.p.style = self.styles[cont]
                                 self.flowElements.append(self.p)
                                 self.flowElements.append(FrameBreak())
                                 if i.get('text') != ' ':
-                                    contador = contador + 1
+                                    cont = cont + 1
         return self.flowElements
+
 
     def get_cols_values(self, flowable):
         result = re.search(r'is-\w+', flowable.text)
@@ -131,8 +130,9 @@ class grid(utility_calc, utility_search_strip,default_g):
                     parent_column = self.searching_index(flow)
                     self.children.append(parent_column)
                 cols_values = self.get_cols_values(flow)
-                cw = self.get_col_width(cols_values.get('colName'), parent_column)
-                nf = self.clean_text_flowable(flow)
+                if cols_values.get('colName').startswith('is-'):
+                    cw = self.get_col_width(cols_values.get('colName'), parent_column)
+                    nf = self.clean_text_flowable(flow)
                 if cols >= 12:
                     if not parent_column:
                         self.wraps.append(self.next_frame)
@@ -205,7 +205,6 @@ class grid(utility_calc, utility_search_strip,default_g):
             contador = 0
             ptl = []
             ids = []
-            print(len(self.pf))
             for f in self.pf:
                 id = 'id' + str(contador)
                 ids.append(id)
@@ -215,12 +214,6 @@ class grid(utility_calc, utility_search_strip,default_g):
             if self.morePages:
                 ids.remove('id0')
             return ptl, ids
-            #self.flowElements.insert(0, NextPageTemplate(ids))
-            #self.doc.addPageTemplates(ptl)
-            #self.clean_text_flowables()
-            #self.doc.build(self.flowElements)
 
-#g = grid()
-#g.final_pf(margin_top=2)
 
 

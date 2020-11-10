@@ -18,13 +18,14 @@ import io
 import logging
 
 import six
-from reportlab.platypus import NextPageTemplate, FrameBreak
+from reportlab.platypus import NextPageTemplate
 from reportlab.platypus.flowables import Spacer
 from reportlab.platypus.frames import Frame
 
 from xhtml2pdf.context import pisaContext
 from xhtml2pdf.default import DEFAULT_CSS
-from xhtml2pdf.parser import pisaParser, set_bulma_grid_class, div_attr_list, text2, set_column_text, grid_build
+from xhtml2pdf.parser import (pisaParser, set_bulma_grid_class, div_attr_list, grid_text, set_column_text,
+                              grid_build_context, collect_paragraph_styles)
 from xhtml2pdf.util import PyPDF2, getBox, pisaTempFile
 from xhtml2pdf.xhtml2pdf_reportlab import PmlBaseDoc, PmlPageTemplate, PmlParagraph
 from xhtml2pdf.grid import grid
@@ -84,6 +85,15 @@ def pisaStory(src, path=None, link_callback=None, debug=0, default_css=None,
     return context
 
 
+def build_grid_templates(doc, context):
+    styles = collect_paragraph_styles(context)
+    divs = set_bulma_grid_class(div_attr_list)
+    g = grid(set_column_text(grid_build_context(divs), grid_text))
+    ptl, ids = g.final_pf(margin_top=2, styles=styles)
+    context.story.insert(0, NextPageTemplate(ids))
+    doc.addPageTemplates(ptl)
+
+
 def pisaDocument(src, dest=None, path=None, link_callback=None, debug=0,
                  default_css=None, xhtml=False, encoding=None, xml_output=None,
                  raise_exception=True, capacity=100 * 1024, context_meta=None,
@@ -137,19 +147,25 @@ def pisaDocument(src, dest=None, path=None, link_callback=None, debug=0,
                       bottomPadding=0,
                       topPadding=0)],
             pagesize=context.pageSize)
-    styles = []
-    for i in context.story:
-        print(type(i))
-        if isinstance(i, PmlParagraph):
-            styles.append(i.frags[0])
+    #grid = True
+    #no_grid = True
+
+    #if grid and not no_grid:
+    #if grid:
+        #build_grid_templates(doc, context)
+    #if no_grid and not grid:
+    #else:
+        #doc.addPageTemplates([body] + list(context.templateList.values()))
+    #if no_grid and grid:
+    styles = collect_paragraph_styles(context)
     divs = set_bulma_grid_class(div_attr_list)
-    g = grid(set_column_text(grid_build(divs), text2))
+    #print(set_column_text(grid_build_context(divs), grid_text))
+    g = grid(set_column_text(grid_build_context(divs), grid_text))
     ptl, ids = g.final_pf(margin_top=2, styles=styles)
     context.story.insert(0, NextPageTemplate(ids))
-    #context.story.insert(0, NextPageTemplate(ids))
-    #print(ptl)
-    doc.addPageTemplates(ptl)
-    #doc.addPageTemplates([body] + list(context.templateList.values()))
+    joinList = list(context.templateList.values()) + ptl
+    doc.addPageTemplates([body] + joinList)
+
 
     # Use multibuild e.g. if a TOC has to be created
     if context.multiBuild:
