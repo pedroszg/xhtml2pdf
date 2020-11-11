@@ -95,6 +95,8 @@ log = logging.getLogger("xhtml2pdf")
 
 rxhttpstrip = re.compile("https?://[^/]+(.*)", re.M | re.I)
 
+value = None
+
 
 class AttrContainer(dict):
 
@@ -522,11 +524,20 @@ def pisaPreLoop(node, context, collect=False):
             data += result
     return data
 
+def check(context, node):
+    if node.nodeType == Node.ELEMENT_NODE:
+        if node.tagName == 'div':
+            div_attribute = pisaGetAttributes(context, node.tagName, node.attributes)
+            bulma_class = default_g.cols_bootstrap
+            if bulma_class.get(div_attribute.get('class')):
+                if div_attribute.get('coltype') == 'child' or div_attribute.get('coltype') == None:
+                    return True
+
 
 def pisaLoop(node, context, path=None, **kw):
+
     if path is None:
         path = []
-
     # Initialize KW
     if not kw:
         kw = {
@@ -541,13 +552,15 @@ def pisaLoop(node, context, path=None, **kw):
     # indent = len(path) * "  " # only used for debug print statements
 
     # TEXT
+    if check(context, node):
+        global value
+        value = check(context, node)
+
     if node.nodeType == Node.TEXT_NODE:
         # METHOD TO BUILD A GRID STRUCTURE NEEDED TO USE ON GRID EXPERIMENT
-        text.append(node.data)
-        if text.__contains__('\n    '):
-            text.remove('\n    ')
-        if text.__contains__('\n'):
-            text.remove('\n')
+        if value:
+            text.append(node.data)
+            value = False
         #---------------------------------------------------------------------
 
         # print indent, "#", repr(node.data) #, context.frag
@@ -565,7 +578,9 @@ def pisaLoop(node, context, path=None, **kw):
         # PREPARE GRID ATTRIBUTES, NEEDED TO USE IN GRID EXPERIMENT
         if node.tagName == 'div':
             div_attr = pisaGetAttributes(context, node.tagName, node.attributes)
-            div_attr_list.append(div_attr)
+            bulma_class = default_g.cols_bootstrap
+            if div_attr.get('class') == 'row' or bulma_class.get(div_attr.get('class')):
+                div_attr_list.append(div_attr)
         #----------------------------------------------------------
 
         # Prepare attributes
@@ -761,12 +776,11 @@ def pisaLoop(node, context, path=None, **kw):
 
         cont = 0
         for i in text:
-            if cont >= 1:
-                i = i.replace('\n        ', '')
-                i = i.replace('\n    ', '')
-                i = i.replace('     \n', '')
-                grid_text.append(i)
-            cont = cont + 1
+            i = i.replace('\n        ', '')
+            i = i.replace('\n    ', '')
+            i = i.replace('     \n', '')
+            grid_text.append(i)
+            #cont = cont + 1
 
 # METHOD TO BUILD A GRID STRUCTURE NEEDED, TO USE ON GRID EXPERIMENT
 def grid_build_context(div_attr_list):
@@ -811,7 +825,6 @@ def grid_build_context(div_attr_list):
 def set_column_text(content,grid_text):
     cont = 0
     result = []
-    grid_text.remove('NO GRID')
     for i in content:
         if not i.__contains__('parent') and i.get('class') != 'columns':
             i['text'] = grid_text[cont]

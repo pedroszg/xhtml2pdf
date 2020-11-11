@@ -9,22 +9,37 @@
     <title>Title</title>
 </head>
 <style>
-    @page  {
-        size: A4;
-    }
-    .p{
-        color: red;
+    @page body{
+        size: letter;
+        @frame header_frame {           /* Static frame */
+            -pdf-frame-content: header_content;
+            left: 50pt; width: 512pt; top: 50pt; height: 40pt;
+        }
+        @frame content_frame {          /* Content Frame */
+            left: 50pt; width: 512pt; top: 90pt; height: 632pt;
+        }
+        @frame footer_frame {           /* Static frame */
+            -pdf-frame-content: footer_content;
+            left: 50pt; width: 512pt; top: 772pt; height: 20pt;
+        }
     }
 </style>
 <body>
+<p>NO GRID</p>
+<img src="img/beach.jpg">
+<pdf:nextframe name="" />
 <div class="row" style="text-align: center">
 <div class="col-sm-6" coltype="parent" style="background-color: #99CC66">
 <div class="row" rowtype="child">
+    <pdf:nextframe name="" />
 <div class="col-sm-4" coltype="child" style="background-color: #FFBBBB">col-4</div>
+    <pdf:nextframe name="" />
 <div class="col-sm-8" coltype="child" style="background-color: #336699">col-8</div>
+    <pdf:nextframe name="" />
 </div>
 </div>
 <div class="col-sm-6">cols-6</div>
+    <pdf:nextframe name="" />
 </div>
 <div class="row" style="text-align: center">
     <div class="col-sm-4" style="background-color: aqua">Lorem ipsum dolor sit amet, consectetur adipiscing elit,
@@ -33,18 +48,23 @@
         voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident,
         sunt in culpa qui officia deserunt mollit anim id est laborum
     </div>
+    <pdf:nextframe name="" />
     <div class="col-sm-4" style="background-color: crimson">Lorem ipsum dolor sit amet, consectetur adipiscing elit,
         sed do eiusmod tempor incididunt ut labore et dolore magna aliqua
     </div>
+    <pdf:nextframe name="" />
     <div class="col-sm-4" style="background-color: green">Lorem ipsum dolor sit amet, consectetur adipiscing elit,
         sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
         exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in
-        voluptate velit esse cillum dolore eu fugiat nulla pariatur</div>
+        voluptate velit esse cillum dolore eu fugiat nulla pariatur
+    </div>
+    <pdf:nextframe name="" />
     </div>
     <div class="row" style="text-align: center">
     <div class="col-sm-4" style="background-color: aquamarine">Duis aute irure dolor in reprehenderit in
         voluptate velit esse cillum dolore eu fugiat nulla pariatur
     </div>
+    <pdf:nextframe name="" />
     <div class="col-sm-8" style="background-color: blueviolet">Lorem ipsum dolor sit amet, consectetur adipiscing elit,
         sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
         exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in
@@ -52,5 +72,7 @@
         sunt in culpa qui officia deserunt mollit anim id est laborum
     </div>
     </div>
+    <pdf:nexttemplate name="body" />
+    <p>NO GRID</p>
 </body>
 </html>

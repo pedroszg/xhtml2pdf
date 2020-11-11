@@ -32,10 +32,10 @@ class grid(utility_calc, utility_search_strip, default_g):
 
     def __init__(self, context):
 
-        self.doc = BaseDocTemplate('grid.pdf', pagesize=letter, _pageBreakQuick=1, allowSplitting=1)
+        self.doc = BaseDocTemplate('grid.pdf', pagesize=letter, _pageBreakQuick=1, allowSplitting=0)
 
         self.style = ParagraphStyle('style', textColor=colors.black, firstLineIndent=5, fontSize=7.5, leading=11.5,
-                              borderPadding=(5,), borderColor=colors.blue, allowWidows=1, allowOrphans=1)
+                              borderPadding=(5,), borderColor=colors.blue, allowWidows=1, allowOrphans=0)
 
         self.doc_width = self.doc.width
 
@@ -182,11 +182,11 @@ class grid(utility_calc, utility_search_strip, default_g):
                             wid = wid - temp_width
                             f = Frame(self.doc.leftMargin + wid, startposition - values[1], values[0], values[1]
                                 + totalpading,
-                                topPadding=padingTop, bottomPadding=padingBottom, showBoundary=0)
+                                topPadding=padingTop, bottomPadding=padingBottom, showBoundary=1)
                             children = False
                         f = Frame(self.doc.leftMargin + wid, startposition - values[1], values[0], values[1]
                                   + totalpading,
-                                  topPadding=padingTop, bottomPadding=padingBottom, showBoundary=0)
+                                  topPadding=padingTop, bottomPadding=padingBottom, showBoundary=1)
                         temp_width = values[0]
                         wid = values[0] + wid + margin_left
                         self.frames.append(f)
