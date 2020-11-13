@@ -552,15 +552,20 @@ def pisaLoop(node, context, path=None, **kw):
     # indent = len(path) * "  " # only used for debug print statements
 
     # TEXT
+    global index
+    index = None
     if check(context, node):
         global value
         value = check(context, node)
 
     if node.nodeType == Node.TEXT_NODE:
         # METHOD TO BUILD A GRID STRUCTURE NEEDED TO USE ON GRID EXPERIMENT
+        if index:
+            value = True
         if value:
             text.append(node.data)
             value = False
+            index = True
         #---------------------------------------------------------------------
 
         # print indent, "#", repr(node.data) #, context.frag
@@ -576,6 +581,17 @@ def pisaLoop(node, context, path=None, **kw):
         path = copy.copy(path) + [node.tagName]
 
         # PREPARE GRID ATTRIBUTES, NEEDED TO USE IN GRID EXPERIMENT
+
+        if node.tagName == 'img':
+            if index:
+                value = True
+                index = False
+            if value:
+                attr = pisaGetAttributes(context, node.tagName, node.attributes)
+                text.append(attr)
+                value = False
+                index = True
+
         if node.tagName == 'div':
             div_attr = pisaGetAttributes(context, node.tagName, node.attributes)
             bulma_class = default_g.cols_bootstrap
@@ -776,11 +792,13 @@ def pisaLoop(node, context, path=None, **kw):
 
         cont = 0
         for i in text:
-            i = i.replace('\n        ', '')
-            i = i.replace('\n    ', '')
-            i = i.replace('     \n', '')
-            grid_text.append(i)
-            #cont = cont + 1
+            if isinstance(i, str):
+                i = i.replace('\n        ', '')
+                i = i.replace('\n    ', '')
+                i = i.replace('     \n', '')
+                grid_text.append(i)
+            else:
+                grid_text.append(i)
 
 # METHOD TO BUILD A GRID STRUCTURE NEEDED, TO USE ON GRID EXPERIMENT
 def grid_build_context(div_attr_list):

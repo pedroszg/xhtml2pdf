@@ -27,7 +27,7 @@ from xhtml2pdf.default import DEFAULT_CSS
 from xhtml2pdf.parser import (pisaParser, set_bulma_grid_class, div_attr_list, grid_text, set_column_text,
                               grid_build_context, collect_paragraph_styles)
 from xhtml2pdf.util import PyPDF2, getBox, pisaTempFile
-from xhtml2pdf.xhtml2pdf_reportlab import PmlBaseDoc, PmlPageTemplate, PmlParagraph
+from xhtml2pdf.xhtml2pdf_reportlab import PmlBaseDoc, PmlPageTemplate
 from xhtml2pdf.grid import grid
 
 
@@ -88,10 +88,11 @@ def pisaStory(src, path=None, link_callback=None, debug=0, default_css=None,
 def build_grid_templates(doc, context):
     styles = collect_paragraph_styles(context)
     divs = set_bulma_grid_class(div_attr_list)
-    g = grid(set_column_text(grid_build_context(divs), grid_text))
+    g = grid(set_column_text(grid_build_context(divs), grid_text), doc)
     ptl, ids = g.final_pf(margin_top=2, styles=styles)
     context.story.insert(0, NextPageTemplate(ids))
-    doc.addPageTemplates(ptl)
+    joinList = list(context.templateList.values()) + ptl
+    return joinList
 
 
 def pisaDocument(src, dest=None, path=None, link_callback=None, debug=0,
@@ -147,24 +148,14 @@ def pisaDocument(src, dest=None, path=None, link_callback=None, debug=0,
                       bottomPadding=0,
                       topPadding=0)],
             pagesize=context.pageSize)
-    #grid = True
-    #no_grid = True
 
-    #if grid and not no_grid:
-    #if grid:
-        #build_grid_templates(doc, context)
-    #if no_grid and not grid:
-    #else:
-        #doc.addPageTemplates([body] + list(context.templateList.values()))
-    #if no_grid and grid:
-    styles = collect_paragraph_styles(context)
-    divs = set_bulma_grid_class(div_attr_list)
-    #print(set_column_text(grid_build_context(divs), grid_text))
-    g = grid(set_column_text(grid_build_context(divs), grid_text))
-    ptl, ids = g.final_pf(margin_top=2, styles=styles)
-    context.story.insert(0, NextPageTemplate(ids))
-    joinList = list(context.templateList.values()) + ptl
-    doc.addPageTemplates([body] + joinList)
+    cols = True
+    no_cols = False
+
+    if no_cols and not cols:
+        doc.addPageTemplates([body] + list(context.templateList.values()))
+    else:
+        doc.addPageTemplates([body] + build_grid_templates(doc, context))
 
 
     # Use multibuild e.g. if a TOC has to be created

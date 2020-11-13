@@ -5,14 +5,20 @@ import re
 class utility_search_strip:
 
     def search_strip_str(self, flowable):
-        text = flowable.text
+        if isinstance(flowable, Paragraph):
+            text = flowable.text
+        else:
+            text = flowable.get('text')
         result = re.search(r'[\w.-]+#[\w.-]+', text)
         text = text.lstrip(result.group())
         text = text.lstrip()
         return text
 
     def searching_index(self, flowable):
-        index = re.search(r'-\w+', flowable.text)
+        if isinstance(flowable, Paragraph):
+            index = re.search(r'-\w+', flowable.text)
+        else:
+            index = re.search(r'-\w+', flowable.get('text'))
         index = index.group()
         index = index.lstrip('-')
         return index
@@ -24,7 +30,9 @@ class utility_search_strip:
                 text = self.search_strip_str(flow)
                 nf = Paragraph(text, self.style)
                 cleans_flowables.append(nf)
-            else:
+            if isinstance(flow, dict):
+                text = self.search_strip_str(flow)
+                flow['text'] = text
                 cleans_flowables.append(flow)
         self.flowElements = cleans_flowables
 
