@@ -1,7 +1,7 @@
 from reportlab.lib import colors
-from reportlab.platypus import Frame, PageTemplate, Paragraph, FrameBreak, Image
+from reportlab.platypus import Frame, PageTemplate, Paragraph, FrameBreak
 from reportlab.lib.styles import ParagraphStyle
-from xhtml2pdf.util import pisaFileObject
+from xhtml2pdf.xhtml2pdf_reportlab import PmlImage
 import re
 from xhtml2pdf.utility_calc_values import utility_calc
 from xhtml2pdf.utility_search_strip_values import utility_search_strip
@@ -72,32 +72,39 @@ class grid(utility_calc, utility_search_strip, default_g):
                 self.p = Paragraph(self.index.get('default') + flowable.get('class') + self.index.get('default') + ' ' +
                                    flowable.get('text'),
                                    self.style)
+        obj = None
+        if isinstance(flowable.get('text'), list):
+            obj = flowable.get('text')[1].get('scr')
+            width = flowable.get('text')[1].get('width')
+            height = flowable.get('text')[1].get('height')
         if isinstance(flowable.get('text'), dict):
-            obj = flowable.get('text').get('src')
-            if isinstance(obj, pisaFileObject):
-                if flowable.get('child'):
-                    obj = {
-                        'text': self.index.get('child') + flowable.get('child') + self.index.get('default')
-                                 + flowable.get('class') + self.index.get('default') + ' ',
-                        'width': flowable.get('text').get('width'),
-                        'height': flowable.get('text').get('height')
-                    }
-                    self.p = obj
-                if flowable.get('parent'):
-                    obj = {
-                        'text': self.index.get('parent') + flowable.get('parent') + self.index.get('default')
-                                 + flowable.get('class') + self.index.get('default') + ' ',
-                        'width': flowable.get('text').get('width'),
-                        'height': flowable.get('text').get('height'),
-                    }
-                    self.p = obj
-                if not flowable.get('child') and not flowable.get('parent'):
-                    obj = {
-                        'text': self.index.get('default') + flowable.get('class') + self.index.get('default') + ' ',
-                        'width': flowable.get('text').get('width') * 0.75,
-                        'height': flowable.get('text').get('height') * 0.75,
-                    }
-                    self.p = obj
+            obj = flowable.get('text').get('scr')
+            width = flowable.get('text').get('width')
+            height = flowable.get('text').get('height')
+        if isinstance(obj, PmlImage):
+            if flowable.get('child'):
+                obj = {
+                    'text': self.index.get('child') + flowable.get('child') + self.index.get('default')
+                                + flowable.get('class') + self.index.get('default') + ' ',
+                    'width': flowable.get('text')[1].get('width'),
+                    'height': flowable.get('text')[1].get('height'),
+                }
+                self.p = obj
+            if flowable.get('parent'):
+                obj = {
+                    'text': self.index.get('parent') + flowable.get('parent') + self.index.get('default')
+                                + flowable.get('class') + self.index.get('default') + ' ',
+                    'width': flowable.get('text').get('width'),
+                    'height': flowable.get('text').get('height'),
+                 }
+                self.p = obj
+            if not flowable.get('child') and not flowable.get('parent'):
+                obj = {
+                    'text': self.index.get('default') + flowable.get('class') + self.index.get('default') + ' ',
+                    'width': width,
+                    'height': height,
+                }
+                self.p = obj
 
 
     def set_flowables(self):
@@ -181,7 +188,6 @@ class grid(utility_calc, utility_search_strip, default_g):
                     self.wraps.append(wh)
                     wh = []
             if isinstance(flow, dict):
-                print(flow)
                 if flow.get('text').startswith(self.index.get('parent')):
                     parent = self.searching_index(flow)
                 if flow.get('text').startswith(self.index.get('child')):
@@ -214,7 +220,7 @@ class grid(utility_calc, utility_search_strip, default_g):
         self.get_wrap_flowables()
         wid = 0
         mxh = 0
-        av = 700
+        av = self.doc.height
         space = 0
         temp_width = 0
         children = False
@@ -238,11 +244,14 @@ class grid(utility_calc, utility_search_strip, default_g):
                     if isinstance(values, tuple):
                         if children:
                             wid = wid - temp_width
+                            print(values[1])
                             f = Frame(self.doc.leftMargin + wid, startposition - values[1], values[0], values[1]
                                 + totalpading,
                                 topPadding=padingTop, bottomPadding=padingBottom, showBoundary=0)
                             children = False
-                        f = Frame(self.doc.leftMargin + wid, startposition - values[1], values[0], values[1]
+                        else:
+                            print(values[1])
+                            f = Frame(self.doc.leftMargin + wid, startposition - values[1], values[0], values[1]
                                   + totalpading,
                                   topPadding=padingTop, bottomPadding=padingBottom, showBoundary=0)
                         temp_width = values[0]

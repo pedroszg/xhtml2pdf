@@ -524,7 +524,7 @@ def pisaPreLoop(node, context, collect=False):
             data += result
     return data
 
-def check(context, node):
+def checking_div_grid(context, node):
     if node.nodeType == Node.ELEMENT_NODE:
         if node.tagName == 'div':
             div_attribute = pisaGetAttributes(context, node.tagName, node.attributes)
@@ -535,7 +535,6 @@ def check(context, node):
 
 
 def pisaLoop(node, context, path=None, **kw):
-
     if path is None:
         path = []
     # Initialize KW
@@ -548,24 +547,23 @@ def pisaLoop(node, context, path=None, **kw):
         }
     else:
         kw = copy.copy(kw)
-
     # indent = len(path) * "  " # only used for debug print statements
-
     # TEXT
     global index
     index = None
-    if check(context, node):
+
+    global incol
+    incol = False
+
+    div_grid = checking_div_grid(context, node)
+    if div_grid:
         global value
-        value = check(context, node)
+        value = div_grid
 
     if node.nodeType == Node.TEXT_NODE:
         # METHOD TO BUILD A GRID STRUCTURE NEEDED TO USE ON GRID EXPERIMENT
-        if index:
-            value = True
         if value:
-            text.append(node.data)
-            value = False
-            index = True
+            incol = True
         #---------------------------------------------------------------------
 
         # print indent, "#", repr(node.data) #, context.frag
@@ -583,14 +581,8 @@ def pisaLoop(node, context, path=None, **kw):
         # PREPARE GRID ATTRIBUTES, NEEDED TO USE IN GRID EXPERIMENT
 
         if node.tagName == 'img':
-            if index:
-                value = True
-                index = False
             if value:
-                attr = pisaGetAttributes(context, node.tagName, node.attributes)
-                text.append(attr)
-                value = False
-                index = True
+                incol = True
 
         if node.tagName == 'div':
             div_attr = pisaGetAttributes(context, node.tagName, node.attributes)
@@ -620,10 +612,8 @@ def pisaLoop(node, context, path=None, **kw):
         # print indent, node.tagName, display,
         # context.cssAttr.get("background-color", None), attr
         isBlock = (display == "block")
-
         if isBlock:
             context.addPara()
-
             # Page break by CSS
             if "-pdf-next-page" in context.cssAttr:
                 context.addStory(
@@ -738,8 +728,9 @@ def pisaLoop(node, context, path=None, **kw):
             obj.end(context)
 
         # Block?
+            context.addPara(incols=incol)
         if isBlock:
-            context.addPara()
+            context.addPara(incols=incol)
 
             # XXX Buggy!
 
@@ -790,16 +781,6 @@ def pisaLoop(node, context, path=None, **kw):
 
         #NEEDED TO USE ON GRID EXPERIMENT
 
-        cont = 0
-        for i in text:
-            if isinstance(i, str):
-                i = i.replace('\n        ', '')
-                i = i.replace('\n    ', '')
-                i = i.replace('     \n', '')
-                grid_text.append(i)
-            else:
-                grid_text.append(i)
-
 # METHOD TO BUILD A GRID STRUCTURE NEEDED, TO USE ON GRID EXPERIMENT
 def grid_build_context(div_attr_list):
     content = []
@@ -836,7 +817,6 @@ def grid_build_context(div_attr_list):
             parent = cont
             content.append(dic)
             cont = cont + 1
-
     return content
 
 # METHOD TO SET TEXT INTO COLUMNS GRID STRUCTURE, NEEDED TO USE ON GRID EXPERIMENT
@@ -852,7 +832,7 @@ def set_column_text(content,grid_text):
             result.append(i)
     return result
 
-def set_bulma_grid_class(divs):
+def set_grid_class(divs):
     bulma_class = default_g.cols_bootstrap
     cols = default_g.cols
     result = []
@@ -924,8 +904,8 @@ def pisaParser(src, context, default_css="", xhtml=False, encoding=None, xml_out
     #    context.cssText = DEFAULT_CSS
     #    context.parseCSS()
     # context.debug(9, pprint.pformat(context.css))
-
     pisaLoop(document, context)
+    collect_grid_context(context)
     return context
 
 
@@ -948,3 +928,46 @@ def collect_paragraph_styles(context):
         if isinstance(i, PmlParagraph):
             styles.append(i.frags[0])
     return styles
+
+def multi_content_grid(frags):
+    result_list = []
+    for frag in frags:
+        if hasattr(frag, 'cbDefn'):
+            obj = {
+                'scr': frag.cbDefn.image,
+                'width': frag.cbDefn.width,
+                'height': frag.cbDefn.height,
+            }
+            result_list.append(obj)
+        else:
+            result_list.append(frag.text)
+    return result_list
+
+def building_collected_grid_context(frags):
+    if frags[0].inCol == True:
+        del frags[-1]
+        count_frags = len(frags)
+        if count_frags > 1:
+            multi_content = multi_content_grid(frags)
+            grid_text.append(multi_content)
+            text.append(multi_content)
+        if count_frags == 1:
+            if hasattr(frags[0], 'cbDefn'):
+                obj = {
+                'scr': frags[0].cbDefn.image,
+                'width': frags[0].cbDefn.width,
+                'height': frags[0].cbDefn.height,
+                }
+                text.append(obj)
+                grid_text.append(obj)
+            else:
+                text.append(frags[0].text)
+                grid_text.append(frags[0].text)
+
+def collect_grid_context(context):
+    for i in context.story:
+        if isinstance(i, PmlParagraph):
+           building_collected_grid_context(i.frags)
+
+
+

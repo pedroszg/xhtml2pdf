@@ -97,7 +97,7 @@ def getParaFrag(style):
               )
     set_value(frag,
               ('pageNumber', 'pageCount', 'outline',
-               'outlineOpen', 'keepWithNext'),
+               'outlineOpen', 'keepWithNext','inCol'),
               False)
 
     frag.text = ""
@@ -554,7 +554,7 @@ class pisaContext(object):
     def dumpPara(self, frags, style):
         return
 
-    def addPara(self, force=False):
+    def addPara(self, force=False, incols=None):
 
         force = (force or self.force)
         self.force = False
@@ -623,7 +623,7 @@ class pisaContext(object):
                         para,
                         self.image,
                         side=self.imageData.get("align", "left"))
-
+                para.frags[0].inCol = incols
                 self.addStory(para)
 
             self.fragAnchor = []
@@ -725,6 +725,7 @@ class pisaContext(object):
                             self.fragStrip = False
                     self.text += frag.text
                     self._appendFrag(frag)
+        #here we can get clean text
 
     def pushFrag(self):
         self.fragStack.append(self.frag)

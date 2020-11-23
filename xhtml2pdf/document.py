@@ -24,7 +24,7 @@ from reportlab.platypus.frames import Frame
 
 from xhtml2pdf.context import pisaContext
 from xhtml2pdf.default import DEFAULT_CSS
-from xhtml2pdf.parser import (pisaParser, set_bulma_grid_class, div_attr_list, grid_text, set_column_text,
+from xhtml2pdf.parser import (pisaParser, set_grid_class, div_attr_list, grid_text, set_column_text,
                               grid_build_context, collect_paragraph_styles)
 from xhtml2pdf.util import PyPDF2, getBox, pisaTempFile
 from xhtml2pdf.xhtml2pdf_reportlab import PmlBaseDoc, PmlPageTemplate
@@ -87,12 +87,12 @@ def pisaStory(src, path=None, link_callback=None, debug=0, default_css=None,
 
 def build_grid_templates(doc, context):
     styles = collect_paragraph_styles(context)
-    divs = set_bulma_grid_class(div_attr_list)
+    divs = set_grid_class(div_attr_list)
     g = grid(set_column_text(grid_build_context(divs), grid_text), doc)
-    ptl, ids = g.final_pf(margin_top=2, styles=styles)
+    ptl, ids = g.final_pf(styles=styles)
     context.story.insert(0, NextPageTemplate(ids))
-    joinList = list(context.templateList.values()) + ptl
-    return joinList
+    #joinList = list(context.templateList.values()) + ptl
+    return ptl
 
 
 def pisaDocument(src, dest=None, path=None, link_callback=None, debug=0,
@@ -130,7 +130,6 @@ def pisaDocument(src, dest=None, path=None, link_callback=None, debug=0,
                   context.meta["keywords"].strip().split(",") if x],
         title=context.meta["title"].strip(),
         showBoundary=0,
-        _pageBreakQuick=1,
         allowSplitting=1)
     # Prepare templates and their frames
     if "body" in context.templateList:
@@ -155,7 +154,7 @@ def pisaDocument(src, dest=None, path=None, link_callback=None, debug=0,
     if no_cols and not cols:
         doc.addPageTemplates([body] + list(context.templateList.values()))
     else:
-        doc.addPageTemplates([body] + build_grid_templates(doc, context))
+        doc.addPageTemplates(build_grid_templates(doc, context))
 
 
     # Use multibuild e.g. if a TOC has to be created
