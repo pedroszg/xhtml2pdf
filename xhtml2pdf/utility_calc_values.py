@@ -1,4 +1,4 @@
-class utility_calc:
+class UtilityCalcValues:
 
     def get_col_width(self, index, name=None):
         parent_width = self.doc_width

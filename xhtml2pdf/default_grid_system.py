@@ -1,4 +1,4 @@
-class default_g:
+class DefaultGridSystem:
 
     index = {
           'child': '#child-',

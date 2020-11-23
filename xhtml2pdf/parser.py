@@ -29,7 +29,7 @@ from reportlab.platypus.doctemplate import FrameBreak, NextPageTemplate
 from reportlab.platypus.flowables import KeepInFrame, PageBreak
 
 from xhtml2pdf.default import BOOL, BOX, COLOR, FILE, FONT, INT, MUST, POS, SIZE, STRING, TAGS
-from xhtml2pdf.default_g import default_g
+from xhtml2pdf.default_grid_system import DefaultGridSystem
 from xhtml2pdf.xhtml2pdf_reportlab import PmlParagraph
 
 # TODO: Why do we need to import these Tags here? They aren't uses in this file or any other file,
@@ -528,8 +528,8 @@ def checking_div_grid(context, node):
     if node.nodeType == Node.ELEMENT_NODE:
         if node.tagName == 'div':
             div_attribute = pisaGetAttributes(context, node.tagName, node.attributes)
-            bulma_class = default_g.cols_bootstrap
-            if bulma_class.get(div_attribute.get('class')):
+            system_grid_class = DefaultGridSystem.cols_bootstrap
+            if system_grid_class.get(div_attribute.get('class')):
                 if div_attribute.get('coltype') == 'child' or div_attribute.get('coltype') == None:
                     return True
 
@@ -586,8 +586,8 @@ def pisaLoop(node, context, path=None, **kw):
 
         if node.tagName == 'div':
             div_attr = pisaGetAttributes(context, node.tagName, node.attributes)
-            bulma_class = default_g.cols_bootstrap
-            if div_attr.get('class') == 'row' or bulma_class.get(div_attr.get('class')):
+            system_grid_class = DefaultGridSystem.cols_bootstrap
+            if div_attr.get('class') == 'row' or system_grid_class.get(div_attr.get('class')):
                 div_attr_list.append(div_attr)
         #----------------------------------------------------------
 
@@ -833,13 +833,13 @@ def set_column_text(content,grid_text):
     return result
 
 def set_grid_class(divs):
-    bulma_class = default_g.cols_bootstrap
-    cols = default_g.cols
+    system_grid_class = DefaultGridSystem.cols_bootstrap
+    cols = DefaultGridSystem.cols
     result = []
     for div in divs:
-        bulma_col = bulma_class.get(div.get('class'))
-        if bulma_col:
-            div['class'] = bulma_col
+        system_col = system_grid_class.get(div.get('class'))
+        if system_col:
+            div['class'] = system_col
             result.append(div)
         else:
             result.append(div)

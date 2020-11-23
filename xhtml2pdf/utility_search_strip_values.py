@@ -2,7 +2,7 @@ from reportlab.platypus import Paragraph
 import re
 
 
-class utility_search_strip:
+class UtilitySearchStrip:
 
     def search_strip_str(self, flowable):
         if isinstance(flowable, Paragraph):

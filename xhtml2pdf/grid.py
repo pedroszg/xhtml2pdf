@@ -3,12 +3,12 @@ from reportlab.platypus import Frame, PageTemplate, Paragraph, FrameBreak
 from reportlab.lib.styles import ParagraphStyle
 from xhtml2pdf.xhtml2pdf_reportlab import PmlImage
 import re
-from xhtml2pdf.utility_calc_values import utility_calc
-from xhtml2pdf.utility_search_strip_values import utility_search_strip
-from xhtml2pdf.default_g import default_g
+from xhtml2pdf.utility_calc_values import UtilityCalcValues
+from xhtml2pdf.utility_search_strip_values import UtilitySearchStrip
+from xhtml2pdf.default_grid_system import DefaultGridSystem
 
 
-class grid(utility_calc, utility_search_strip, default_g):
+class Grid(UtilityCalcValues, UtilitySearchStrip, DefaultGridSystem):
 
     context_paint = []
     flowElements = []
@@ -23,7 +23,6 @@ class grid(utility_calc, utility_search_strip, default_g):
     style = None
     doc = None
     doc_width = 0
-    morePages = False
     p = None
     unique_index = '#class-colS'
     next_frame = 'next_frame'
@@ -86,16 +85,16 @@ class grid(utility_calc, utility_search_strip, default_g):
                 obj = {
                     'text': self.index.get('child') + flowable.get('child') + self.index.get('default')
                                 + flowable.get('class') + self.index.get('default') + ' ',
-                    'width': flowable.get('text')[1].get('width'),
-                    'height': flowable.get('text')[1].get('height'),
+                    'width': width,
+                    'height': height,
                 }
                 self.p = obj
             if flowable.get('parent'):
                 obj = {
                     'text': self.index.get('parent') + flowable.get('parent') + self.index.get('default')
                                 + flowable.get('class') + self.index.get('default') + ' ',
-                    'width': flowable.get('text').get('width'),
-                    'height': flowable.get('text').get('height'),
+                    'width': width,
+                    'height': height,
                  }
                 self.p = obj
             if not flowable.get('child') and not flowable.get('parent'):
@@ -183,7 +182,7 @@ class grid(utility_calc, utility_search_strip, default_g):
                 cols = cols_result.get('cols')
                 if cols <= 12:
                     w, h = nf.wrap(cw, self.doc.height)
-                    wh = self.set_wh_values(wh, w, h, parent_column, parent)
+                    wh = self.set_wh_values(wh, w, h + 20, parent_column, parent)
                 if cols >= 12:
                     self.wraps.append(wh)
                     wh = []
@@ -226,6 +225,8 @@ class grid(utility_calc, utility_search_strip, default_g):
         children = False
         totalpading = padingTop + padingBottom + 16
         startposition = self.doc._topMargin - totalpading
+        next_template_position_list = []
+        next_template_index = 1
 
         for list_values in self.wraps:
             if isinstance(list_values, list):
@@ -235,22 +236,20 @@ class grid(utility_calc, utility_search_strip, default_g):
                 else:
                     space = space + mxh
                 if space >= av:
+                    next_template_position_list.append(next_template_index)
                     startposition = self.doc._topMargin - totalpading
                     space = mxh
                     self.pf.append(self.frames)
                     self.frames = []
-                    self.morePages = True
                 for values in list_values:
                     if isinstance(values, tuple):
                         if children:
                             wid = wid - temp_width
-                            print(values[1])
                             f = Frame(self.doc.leftMargin + wid, startposition - values[1], values[0], values[1]
                                 + totalpading,
                                 topPadding=padingTop, bottomPadding=padingBottom, showBoundary=0)
                             children = False
                         else:
-                            print(values[1])
                             f = Frame(self.doc.leftMargin + wid, startposition - values[1], values[0], values[1]
                                   + totalpading,
                                   topPadding=padingTop, bottomPadding=padingBottom, showBoundary=0)
@@ -259,14 +258,16 @@ class grid(utility_calc, utility_search_strip, default_g):
                         self.frames.append(f)
                         if len(values) == 3:
                             children = True
+            next_template_index = next_template_index + 1
             if isinstance(list_values, str):
                 if list_values == self.next_frame:
                     startposition = startposition - mxh - margin_top
                     wid = 0
+        return next_template_position_list
 
     def final_pf(self, margin_left=0, margin_top=0, padingTop=0, padingBottom=0, styles=None):
         self.styles = styles
-        self.create_frames(margin_left, margin_top, padingTop, padingBottom)
+        next_template_position_list = self.create_frames(margin_left, margin_top, padingTop, padingBottom)
         self.pf.append(self.frames)
         if self.pf:
             contador = 0
@@ -278,9 +279,7 @@ class grid(utility_calc, utility_search_strip, default_g):
                 t = PageTemplate(id=id, frames=f)
                 contador = contador + 1
                 ptl.append(t)
-            if self.morePages:
-                ids.remove('id0')
-            return ptl, ids
+            return ptl, ids, next_template_position_list
 
 
 
