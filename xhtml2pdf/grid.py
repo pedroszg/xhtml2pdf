@@ -1,3 +1,5 @@
+#!/bin/env/python
+# -*- coding: utf-8 -*-
 from reportlab.lib import colors
 from reportlab.platypus import Frame, PageTemplate, Paragraph, FrameBreak
 from reportlab.lib.styles import ParagraphStyle
