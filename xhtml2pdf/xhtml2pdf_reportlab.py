@@ -129,16 +129,9 @@ class PmlBaseDoc(BaseDocTemplate):
         '''
         if pt has also templates for even and odd page convert it to list
         '''
-        count = 0
-        if isinstance(pt, list):
-            if len(pt)==1:
-                pt = pt[0]
-        if isinstance(pt, str):
-            has_left_template = self._has_template_for_name(pt + '_left')
-            has_right_template = self._has_template_for_name(pt + '_right')
-        else:
-            has_left_template = None
-            has_right_template = None
+
+        has_left_template = self._has_template_for_name(pt + '_left')
+        has_right_template = self._has_template_for_name(pt + '_right')
 
         if has_left_template and has_right_template:
             pt = [pt + '_left', pt + '_right']
@@ -161,7 +154,6 @@ class PmlBaseDoc(BaseDocTemplate):
             #collect the refs to the template objects, complain if any are bad
             c = PTCycle()
             for ptn in pt:
-                found = 0
                 #special case name used to short circuit the iteration
                 if ptn == '*':
                     c._restart = len(c)
@@ -169,9 +161,7 @@ class PmlBaseDoc(BaseDocTemplate):
                 for t in self.pageTemplates:
                     if t.id == ptn.strip():
                         c.append(t)
-                        found = 1
-                if not found:
-                    raise ValueError("Cannot find page template called %s" % ptn)
+                        break
             if not c:
                 raise ValueError("No valid page templates in cycle")
             elif c._restart > len(c):

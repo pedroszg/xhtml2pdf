@@ -29,9 +29,6 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus.frames import Frame, ShowBoundaryValue
 from reportlab.platypus.paraparser import ParaFrag, ps2tt, tt2ps
-from xhtml2pdf.util import (copy_attrs, getColor, getCoords, getFile,
-                            getFrameDimensions, getSize, pisaFileObject,
-                            set_value, set_asian_fonts, arabic_format, frag_text_language_check)
 
 import xhtml2pdf.default
 import xhtml2pdf.parser
@@ -97,7 +94,7 @@ def getParaFrag(style):
               )
     set_value(frag,
               ('pageNumber', 'pageCount', 'outline',
-               'outlineOpen', 'keepWithNext','inCol'),
+               'outlineOpen', 'keepWithNext', 'inCols'),
               False)
 
     frag.text = ""
@@ -310,7 +307,6 @@ class pisaCSSBuilder(css.CSSBuilder):
             else:
                 frame_border = ShowBoundaryValue(
                     color=border_color, width=border_width)
-
             frameList.append(Frame(
                 x, y, w, h,
                 id=fname,
@@ -555,7 +551,6 @@ class pisaContext(object):
         return
 
     def addPara(self, force=False, incols=None):
-
         force = (force or self.force)
         self.force = False
 
@@ -623,8 +618,10 @@ class pisaContext(object):
                         para,
                         self.image,
                         side=self.imageData.get("align", "left"))
-                para.frags[0].inCol = incols
+                if isinstance(para, PmlParagraph):
+                    para.frags[0].inCols = incols
                 self.addStory(para)
+
 
             self.fragAnchor = []
             first.bulletText = None
@@ -725,7 +722,6 @@ class pisaContext(object):
                             self.fragStrip = False
                     self.text += frag.text
                     self._appendFrag(frag)
-        #here we can get clean text
 
     def pushFrag(self):
         self.fragStack.append(self.frag)

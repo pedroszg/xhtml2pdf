@@ -89,7 +89,7 @@ def getting_flow_position_in_grid(context):
     list_cont = []
     for i in context.story:
         if isinstance(i, PmlParagraph):
-            if i.frags[0].inCol:
+            if i.frags[0].inCols:
                 list_cont.append(cont)
         cont = cont + 1
     return list_cont
@@ -107,13 +107,17 @@ def setting_next_page_template(global_grid_next_template, ids, context):
         context.story.insert(global_grid_next_template[i], NextPageTemplate(ids[i+1]))
 
 def build_grid_templates(doc, context):
-    styles = collect_paragraph_styles(context)
-    divs = set_grid_class(div_attr_list)
-    g = Grid(set_column_text(grid_build_context(divs), grid_text), doc)
-    ptl, ids, next_template_position_list = g.final_pf(styles=styles)
-    setting_next_page_template(getting_global_grid_next_template
-                 (next_template_position_list, getting_flow_position_in_grid(context)), ids, context)
-    joinList = list(context.templateList.values()) + ptl
+    joinList = list(context.templateList.values())
+    global grid_text
+    if grid_text != []:
+        styles = collect_paragraph_styles(context)
+        divs = set_grid_class(div_attr_list)
+        g = Grid(set_column_text(grid_build_context(divs), grid_text), doc)
+        ptl, ids, next_template_position_list = g.getting_templates_datas(static_frame=context.frameStatic, styles=styles)
+        setting_next_page_template(getting_global_grid_next_template
+                         (next_template_position_list, getting_flow_position_in_grid(context)), ids, context)
+        joinList = list(context.templateList.values()) + ptl
+        grid_text = []
     return joinList
 
 def pisaDocument(src, dest=None, path=None, link_callback=None, debug=0,
@@ -169,14 +173,8 @@ def pisaDocument(src, dest=None, path=None, link_callback=None, debug=0,
                       topPadding=0)],
             pagesize=context.pageSize)
 
-    cols = True
-    no_cols = False
-
-    if no_cols and not cols:
-        doc.addPageTemplates([body] + list(context.templateList.values()))
-    else:
-        ptl = build_grid_templates(doc, context)
-        doc.addPageTemplates([body] + ptl)
+    ptl = build_grid_templates(doc, context)
+    doc.addPageTemplates([body] + ptl)
 
     # Use multibuild e.g. if a TOC has to be created
     if context.multiBuild:

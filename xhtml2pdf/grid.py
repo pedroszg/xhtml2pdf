@@ -13,13 +13,12 @@ class Grid(UtilityCalcValues, UtilitySearchStrip, DefaultGridSystem):
     context_paint = []
     flowElements = []
     wraps = []
-    maxss = []
     frames = []
     cols_width = []
-    pf = []
+    page_frames = []
     grids = []
     children = []
-
+    static_frames = None
     style = None
     doc = None
     doc_width = 0
@@ -40,6 +39,12 @@ class Grid(UtilityCalcValues, UtilitySearchStrip, DefaultGridSystem):
 
         self.context = context
 
+    def get_temporal_paragraph(self, text, style, grid_class):
+        p = Paragraph(text, self.style)
+        cw = self.get_col_width(grid_class)
+        w, h = p.wrap(cw, self.doc.height)
+        return h
+
     def setting_context(self):
         cont= 0
         grid = []
@@ -57,7 +62,7 @@ class Grid(UtilityCalcValues, UtilitySearchStrip, DefaultGridSystem):
         self.context_paint.append(self.grids)
         return self.context_paint
 
-    def setting_index_to_flowable(self, flowable):
+    def setting_index_to_flowable(self, flowable, numStyle):
         if isinstance(flowable.get('text'), str):
             if flowable.get('child'):
                 self.p = Paragraph(self.index.get('child') + flowable.get('child') + self.index.get('default')
@@ -73,9 +78,24 @@ class Grid(UtilityCalcValues, UtilitySearchStrip, DefaultGridSystem):
                                    self.style)
         obj = None
         if isinstance(flowable.get('text'), list):
-            obj = flowable.get('text')[1].get('scr')
-            width = flowable.get('text')[1].get('width')
-            height = flowable.get('text')[1].get('height')
+            if dict in flowable.get('text'):
+                obj = flowable.get('text')[1].get('scr')
+                width = flowable.get('text')[1].get('width')
+                height = flowable.get('text')[1].get('height')
+            if isinstance(flowable.get('text')[0], str):
+                flow_para = {
+                    "class": flowable.get('class'),
+                    "text": flowable.get('text')[0],
+                }
+                self.setting_index_to_flowable(flow_para, numStyle)
+            else:
+                flow_img = {
+                    'scr': flowable.get('text')[0].get('scr'),
+                    'width': flowable.get('text')[0].get('width'),
+                    'height': flowable.get('text')[0].get('height'),
+                }
+                self.setting_index_to_flowable(flow_img, numStyle)
+
         if isinstance(flowable.get('text'), dict):
             obj = flowable.get('text').get('scr')
             width = flowable.get('text').get('width')
@@ -98,16 +118,20 @@ class Grid(UtilityCalcValues, UtilitySearchStrip, DefaultGridSystem):
                  }
                 self.p = obj
             if not flowable.get('child') and not flowable.get('parent'):
+                space_over = 0
+                if isinstance(flowable.get('text'), list):
+                    space_over = self.get_temporal_paragraph(flowable.get('text')[0], numStyle, flowable.get('class'))
+                height = space_over + height
                 obj = {
                     'text': self.index.get('default') + flowable.get('class') + self.index.get('default') + ' ',
                     'width': width,
-                    'height': height,
+                    'height': height + space_over,
                 }
                 self.p = obj
 
-
     def set_flowables(self):
         cont = 0
+        num_style = 0
         objects = self.setting_context()
         for object in objects:
             if 'grid' in object:
@@ -115,7 +139,8 @@ class Grid(UtilityCalcValues, UtilitySearchStrip, DefaultGridSystem):
                     if isinstance(f, list):
                         for i in f:
                             if i.get('text'):
-                                self.setting_index_to_flowable(i)
+                                num_style = num_style + 1
+                                self.setting_index_to_flowable(i, num_style)
                                 if isinstance(i.get('text'), str):
                                     self.p.style = self.styles[cont]
                                 self.flowElements.append(self.p)
@@ -124,15 +149,21 @@ class Grid(UtilityCalcValues, UtilitySearchStrip, DefaultGridSystem):
                                     cont = cont + 1
         return self.flowElements
 
-
     def get_cols_values(self, flowable):
         if isinstance(flowable, Paragraph):
             result = re.search(r'is-\w+', flowable.text)
+            if not result:
+                result = re.search(r'col-sm-\w+', flowable.text)
         else:
             result = re.search(r'is-\w+', flowable.get('text'))
+            if not result:
+                result = re.search(r'col-sm-\w+', flowable.text)
         colName = result.group()
         colNumName = len(colName)
-        colSize = colName[3:colNumName]
+        if colName.startswith('col'):
+            colSize = colName[7:colNumName]
+        else:
+            colSize = colName[3:colNumName]
         values = {
             'colName': colName,
             'colSize': colSize
@@ -167,7 +198,7 @@ class Grid(UtilityCalcValues, UtilitySearchStrip, DefaultGridSystem):
                     parent_column = self.searching_index(flow)
                     self.children.append(parent_column)
                 cols_values = self.get_cols_values(flow)
-                if cols_values.get('colName').startswith('is-'):
+                if cols_values.get('colName').startswith('is-') or cols_values.get('colName').startswith('col'):
                     cw = self.get_col_width(cols_values.get('colName'), parent_column)
                     nf = self.clean_text_flowable(flow)
                 if cols >= 12:
@@ -193,7 +224,7 @@ class Grid(UtilityCalcValues, UtilitySearchStrip, DefaultGridSystem):
                     parent_column = self.searching_index(flow)
                     self.children.append(parent_column)
                 cols_values = self.get_cols_values(flow)
-                if cols_values.get('colName').startswith('is-'):
+                if cols_values.get('colName').startswith('is-') or cols_values.get('colName').startswith('col'):
                     cw = self.get_col_width(cols_values.get('colName'), parent_column)
                     nf = self.clean_text_flowable(flow)
                 if cols >= 12:
@@ -239,7 +270,7 @@ class Grid(UtilityCalcValues, UtilitySearchStrip, DefaultGridSystem):
                     next_template_position_list.append(next_template_index)
                     startposition = self.doc._topMargin - totalpading
                     space = mxh
-                    self.pf.append(self.frames)
+                    self.page_frames.append(self.frames)
                     self.frames = []
                 for values in list_values:
                     if isinstance(values, tuple):
@@ -261,19 +292,21 @@ class Grid(UtilityCalcValues, UtilitySearchStrip, DefaultGridSystem):
             next_template_index = next_template_index + 1
             if isinstance(list_values, str):
                 if list_values == self.next_frame:
-                    startposition = startposition - mxh - margin_top
+                    startposition = (startposition) - (mxh + padingTop)
                     wid = 0
         return next_template_position_list
 
-    def final_pf(self, margin_left=0, margin_top=0, padingTop=0, padingBottom=0, styles=None):
+    def getting_templates_datas(self, margin_left=0, margin_top=0, padingTop=0, padingBottom=0, styles=None, static_frame=None):
+        self.static_frame = static_frame
         self.styles = styles
         next_template_position_list = self.create_frames(margin_left, margin_top, padingTop, padingBottom)
-        self.pf.append(self.frames)
-        if self.pf:
+        self.page_frames.append(self.frames)
+        #self.pf.append(self.sf.get('header_content'))
+        if self.page_frames:
             contador = 0
             ptl = []
             ids = []
-            for f in self.pf:
+            for f in self.page_frames:
                 id = 'id' + str(contador)
                 ids.append(id)
                 t = PageTemplate(id=id, frames=f)
