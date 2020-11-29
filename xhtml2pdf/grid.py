@@ -65,7 +65,7 @@ class Grid(UtilityCalcValues, UtilitySearchStrip, DefaultGridSystem):
         return self.context_paint
 
     def setting_index_to_flowable(self, flowable, numStyle):
-        if isinstance(flowable.get('text'), str) or isinstance(flowable.get('text')[0], six.string_types):
+        if isinstance(flowable.get('text'), str) or isinstance(flowable.get('text'), six.string_types):
             if flowable.get('child'):
                 self.p = Paragraph(self.index.get('child') + flowable.get('child') + self.index.get('default')
                                    + flowable.get('class') + self.index.get('default') + ' ' + flowable.get('text'),
