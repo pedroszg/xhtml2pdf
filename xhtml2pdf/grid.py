@@ -96,7 +96,7 @@ class Grid(UtilityCalcValues, UtilitySearchStrip, DefaultGridSystem):
                         'width': flowable.get('text')[0].get('width'),
                         'height': flowable.get('text')[0].get('height'),
                     }
-                self.setting_index_to_flowable(flow_img, numStyle)
+                    self.setting_index_to_flowable(flow_img, numStyle)
 
         if isinstance(flowable.get('text'), dict):
             obj = flowable.get('text').get('scr')
