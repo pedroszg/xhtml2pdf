@@ -148,7 +148,6 @@ class Grid(UtilityCalcValues, UtilitySearchStrip, DefaultGridSystem):
                                 self.flowElements.append(FrameBreak())
                                 if i.get('text') != ' ':
                                     cont = cont + 1
-        #print(len(self.styles))
         return self.flowElements
 
     def get_cols_values(self, flowable):
