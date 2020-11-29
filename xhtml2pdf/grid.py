@@ -47,7 +47,7 @@ class Grid(UtilityCalcValues, UtilitySearchStrip, DefaultGridSystem):
         return h
 
     def setting_context(self):
-        cont= 0
+        cont = 0
         grid = []
         for i in self.context:
             if i.get('class') == 'columns' or self.cols.get(i.get('class')):
