@@ -64,7 +64,7 @@ class Grid(UtilityCalcValues, UtilitySearchStrip, DefaultGridSystem):
         return self.context_paint
 
     def setting_index_to_flowable(self, flowable, numStyle):
-        if isinstance(flowable.get('text'), str) or isinstance(flowable.get('text'), six.text_type):
+        if isinstance(flowable.get('text'), six.text_type):
             if flowable.get('child'):
                 self.p = Paragraph(self.index.get('child') + flowable.get('child') + self.index.get('default')
                                    + flowable.get('class') + self.index.get('default') + ' ' + flowable.get('text'),
@@ -83,7 +83,7 @@ class Grid(UtilityCalcValues, UtilitySearchStrip, DefaultGridSystem):
                 obj = flowable.get('text')[1].get('scr')
                 width = flowable.get('text')[1].get('width')
                 height = flowable.get('text')[1].get('height')
-            if isinstance(flowable.get('text')[0], str) or isinstance(flowable.get('text')[0], six.text_type):
+            if isinstance(flowable.get('text')[0], six.text_type):
                 flow_para = {
                     "class": flowable.get('class'),
                     "text": flowable.get('text')[0],
@@ -142,7 +142,7 @@ class Grid(UtilityCalcValues, UtilitySearchStrip, DefaultGridSystem):
                             if i.get('text'):
                                 num_style = num_style + 1
                                 self.setting_index_to_flowable(i, num_style)
-                                if isinstance(i.get('text'), str) or isinstance(i.get('text'), six.text_type):
+                                if isinstance(i.get('text'), six.text_type):
                                     self.p.style = self.styles[cont]
                                 self.flowElements.append(self.p)
                                 self.flowElements.append(FrameBreak())
@@ -293,8 +293,6 @@ class Grid(UtilityCalcValues, UtilitySearchStrip, DefaultGridSystem):
                             children = True
             next_template_index = next_template_index + 1
             if isinstance(list_values, six.text_type):
-                list_values = list_values.encode('utf8')
-            if isinstance(list_values, str) or isinstance(list_values, six.text_type):
                 if list_values == self.next_frame:
                     startposition = (startposition) - (mxh + padingTop)
                     wid = 0
