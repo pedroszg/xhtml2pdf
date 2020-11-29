@@ -1176,7 +1176,7 @@ class Paragraph(Flowable):
         """
 
         if self.debug:
-            print (id(self), "breakLines")
+            print(id(self), "breakLines")
 
         if not isinstance(width, (tuple, list)):
             maxWidths = [width]
@@ -1207,7 +1207,6 @@ class Paragraph(Flowable):
             currentWidth = -spaceWidth   # hack to get around extra space for word 1
             for word in words:
                 #this underscores my feeling that Unicode throughout would be easier!
-                print(self.encoding)
                 wordWidth = stringWidth(word, fontName, fontSize, self.encoding)
                 newWidth = currentWidth + spaceWidth + wordWidth
                 if newWidth <= maxWidth or not len(cLine):

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from docutils.parsers.rst.directives.misc import Unicode
 from reportlab.lib import colors
 from reportlab.platypus import Frame, PageTemplate, Paragraph, FrameBreak
 from reportlab.lib.styles import ParagraphStyle
@@ -312,7 +313,7 @@ class Grid(UtilityCalcValues, UtilitySearchStrip, DefaultGridSystem):
             ptl = []
             ids = []
             for f in self.page_frames:
-                id = 'id' + six.text_type(contador)
+                id = 'id' + str(contador)
                 ids.append(id)
                 t = PageTemplate(id=id, frames=f)
                 contador = contador + 1
