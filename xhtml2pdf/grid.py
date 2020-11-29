@@ -2,6 +2,7 @@
 from reportlab.lib import colors
 from reportlab.platypus import Frame, PageTemplate, Paragraph, FrameBreak
 from reportlab.lib.styles import ParagraphStyle
+import six
 from xhtml2pdf.xhtml2pdf_reportlab import PmlImage
 import re
 from xhtml2pdf.utility_calc_values import UtilityCalcValues
@@ -83,14 +84,13 @@ class Grid(UtilityCalcValues, UtilitySearchStrip, DefaultGridSystem):
                 obj = flowable.get('text')[1].get('scr')
                 width = flowable.get('text')[1].get('width')
                 height = flowable.get('text')[1].get('height')
-            if isinstance(flowable.get('text')[0], str):
+            if isinstance(flowable.get('text')[0], str) or isinstance(flowable.get('text')[0], six.string_types):
                 flow_para = {
                     "class": flowable.get('class'),
                     "text": flowable.get('text')[0],
                 }
                 self.setting_index_to_flowable(flow_para, numStyle)
             else:
-                #if hasattr(flowable.get('text')[0], 'get'):
                 print(flowable.get('text')[0])
                 flow_img = {
                 'scr': flowable.get('text')[0].get('scr'),
