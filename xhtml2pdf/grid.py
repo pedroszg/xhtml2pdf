@@ -90,11 +90,12 @@ class Grid(UtilityCalcValues, UtilitySearchStrip, DefaultGridSystem):
                 }
                 self.setting_index_to_flowable(flow_para, numStyle)
             else:
-                flow_img = {
-                    'scr': flowable.get('text')[0].get('scr'),
-                    'width': flowable.get('text')[0].get('width'),
-                    'height': flowable.get('text')[0].get('height'),
-                }
+                if hasattr(flowable.get('text')[0], 'get'):
+                    flow_img = {
+                        'scr': flowable.get('text')[0].get('scr'),
+                        'width': flowable.get('text')[0].get('width'),
+                        'height': flowable.get('text')[0].get('height'),
+                    }
                 self.setting_index_to_flowable(flow_img, numStyle)
 
         if isinstance(flowable.get('text'), dict):
