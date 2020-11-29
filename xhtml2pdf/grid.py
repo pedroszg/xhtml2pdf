@@ -65,7 +65,7 @@ class Grid(UtilityCalcValues, UtilitySearchStrip, DefaultGridSystem):
         return self.context_paint
 
     def setting_index_to_flowable(self, flowable, numStyle):
-        if isinstance(flowable.get('text'), str):
+        if isinstance(flowable.get('text'), str) or isinstance(flowable.get('text')[0], six.string_types):
             if flowable.get('child'):
                 self.p = Paragraph(self.index.get('child') + flowable.get('child') + self.index.get('default')
                                    + flowable.get('class') + self.index.get('default') + ' ' + flowable.get('text'),
@@ -144,7 +144,7 @@ class Grid(UtilityCalcValues, UtilitySearchStrip, DefaultGridSystem):
                             if i.get('text'):
                                 num_style = num_style + 1
                                 self.setting_index_to_flowable(i, num_style)
-                                if isinstance(i.get('text'), str):
+                                if isinstance(i.get('text'), str) or isinstance(i.get('text'), six.string_types):
                                     self.p.style = self.styles[cont]
                                 self.flowElements.append(self.p)
                                 self.flowElements.append(FrameBreak())
@@ -293,7 +293,7 @@ class Grid(UtilityCalcValues, UtilitySearchStrip, DefaultGridSystem):
                         if len(values) == 3:
                             children = True
             next_template_index = next_template_index + 1
-            if isinstance(list_values, str):
+            if isinstance(list_values, str) or isinstance(list_values, six.string_types):
                 if list_values == self.next_frame:
                     startposition = (startposition) - (mxh + padingTop)
                     wid = 0
