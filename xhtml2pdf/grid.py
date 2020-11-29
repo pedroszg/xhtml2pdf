@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-from docutils.parsers.rst.directives.misc import Unicode
 from reportlab.lib import colors
 from reportlab.platypus import Frame, PageTemplate, Paragraph, FrameBreak
 from reportlab.lib.styles import ParagraphStyle
