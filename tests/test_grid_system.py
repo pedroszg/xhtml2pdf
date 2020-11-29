@@ -23,12 +23,11 @@ class GridSystemTest(TestCase):
                         "left: 50pt; width: 512pt; top: 90pt; height: 632pt;}@frame footer_frame{" \
                         "-pdf-frame-content: footer_content; left: 50pt; width: 512pt; top: 772pt; height: 20pt;}}"
 
-    HTML_CONTENT = """
+    HTML_CONTENT = u"""
        <html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
+        <head>
     <title>Title</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 </head>
 <style>
        {body_page_template}
