@@ -1190,8 +1190,8 @@ class Paragraph(Flowable):
         _handleBulletWidth(self.bulletText, style, maxWidths)
 
         maxWidth = maxWidths[0]
-        self.encoding = 'utf-8'
-        print(self.encoding)
+        if self.encoding == 'utf8':
+            self.encoding = 'utf-8'
         self.height = 0
         autoLeading = getattr(self, 'autoLeading', getattr(style, 'autoLeading', ''))
         calcBounds = autoLeading not in ('', 'off')
