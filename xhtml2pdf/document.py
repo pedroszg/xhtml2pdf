@@ -31,6 +31,7 @@ from xhtml2pdf.xhtml2pdf_reportlab import PmlBaseDoc, PmlPageTemplate, PmlParagr
 from xhtml2pdf.grid import Grid
 
 
+out_grid = []
 if not six.PY2:
     from html import escape as html_escape
 else:
@@ -84,6 +85,7 @@ def pisaStory(src, path=None, link_callback=None, debug=0, default_css=None,
             frag.link = None
     return context
 
+
 def getting_flow_position_in_grid(context):
     cont = 0
     list_cont = []
@@ -94,6 +96,7 @@ def getting_flow_position_in_grid(context):
         cont = cont + 1
     return list_cont
 
+
 def getting_global_grid_next_template(list_nexts, list_cont):
     global_grid_next_template = []
     for index in list_nexts:
@@ -102,21 +105,36 @@ def getting_global_grid_next_template(list_nexts, list_cont):
                 global_grid_next_template.append(list_cont[i]+1)
     return global_grid_next_template
 
+
 def setting_next_page_template(global_grid_next_template, ids, context):
     for i in range(len(global_grid_next_template)):
         context.story.insert(global_grid_next_template[i], NextPageTemplate(ids[i+1]))
+
+
+def checking_content_out_grid(context):
+    for i in context.story:
+        if isinstance(i, PmlParagraph):
+            if i.frags[0].inCols == True:
+                pass
+            else:
+                out_grid.append(i.frags[0])
+
 
 def build_grid_templates(doc, context):
     joinList = list(context.templateList.values())
     global grid_text
     if grid_text != []:
+        checking_content_out_grid(context)
         styles = collect_paragraph_styles(context)
         divs = set_grid_class(div_attr_list)
         g = Grid(set_column_text(grid_build_context(divs), grid_text), doc)
         ptl, ids, next_template_position_list = g.getting_templates_datas(static_frame=context.frameStatic, styles=styles)
         setting_next_page_template(getting_global_grid_next_template
                          (next_template_position_list, getting_flow_position_in_grid(context)), ids, context)
-        joinList = list(context.templateList.values()) + ptl
+        if list(context.templateList.values()) != []:
+            joinList = list(context.templateList.values()) + ptl
+        else:
+            joinList = ptl
         grid_text = []
     return joinList
 
@@ -157,6 +175,7 @@ def pisaDocument(src, dest=None, path=None, link_callback=None, debug=0,
         showBoundary=0,
         allowSplitting=1)
     # Prepare templates and their frames
+    multi_template_list = False
     if "body" in context.templateList:
         body = context.templateList["body"]
         del context.templateList["body"]
@@ -174,7 +193,13 @@ def pisaDocument(src, dest=None, path=None, link_callback=None, debug=0,
             pagesize=context.pageSize)
 
     ptl = build_grid_templates(doc, context)
-    doc.addPageTemplates([body] + ptl)
+    if ptl == []:
+        doc.addPageTemplates([body] + list(context.templateList.values()))
+    if ptl != []:
+        if out_grid == []:
+            doc.addPageTemplates(ptl)
+        else:
+            doc.addPageTemplates([body] + ptl)
 
     # Use multibuild e.g. if a TOC has to be created
     if context.multiBuild:

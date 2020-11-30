@@ -997,5 +997,3 @@ def getting_next_frame_position(context):
                     context.story.insert(new_context.story.index(i) + 1, FrameBreak())
 
 
-
-
