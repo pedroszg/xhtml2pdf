@@ -557,4 +557,5 @@ Full code
         * When a paragraph is longer than the available page height, by default the grid system will do a page
          break, and take the whole row that contains the mentioned paragraph. A Force text split will be needed to
          avoid wasting space on the pages.
+        * For now the columns resulting from a column split cannot be splinted in more columns.
 
